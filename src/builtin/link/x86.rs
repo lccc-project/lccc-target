@@ -1,8 +1,8 @@
 //! linking properties common to x86 targets
 
 use crate::properties::link::{
-    ArchiveFormat, LibrarySearch, LinkFormat, LinkerFlavour, SEARCH_UNIX_DEFAULT,
-    StaticLibraryFormat, SupportedArtifacts,
+    ArchiveFormat, FILENAMES_ELF, LibrarySearch, Link, LinkFormat, LinkerFlavour,
+    SEARCH_UNIX_DEFAULT, StaticLibraryFormat, SupportedArtifacts,
 };
 
 /// Linking for Elf x86-64
@@ -48,4 +48,42 @@ pub static ELF_X86_64_MULTILIBX32: LibrarySearch = LibrarySearch {
 pub static ELF_X86_32_MULTILIB: LibrarySearch = LibrarySearch {
     search_dirs: slice![cowstr!("lib"), cowstr!("lib32")],
     ..SEARCH_UNIX_DEFAULT
+};
+
+/// Elf Format for Freestanding x86-64
+pub static ELF_X86_64_FREESTANDING: LinkFormat = LinkFormat {
+    object_binfmt: cowstr!("elf64-x86_64"),
+    exec_binfmt: cowstr!("elf64-x86_64"),
+    staticlib_format: StaticLibraryFormat::Archive(ArchiveFormat::SysV),
+    supported_artifacts: SupportedArtifacts::NO_DEFAULT_PIE,
+    default_linker_format: LinkerFlavour::Ld,
+};
+
+/// Elf Format for Freestanding x86-32
+pub static ELF_X86_32_FREESTANDING: LinkFormat = LinkFormat {
+    object_binfmt: cowstr!("elf32-x86"),
+    exec_binfmt: cowstr!("elf32-x86"),
+    staticlib_format: StaticLibraryFormat::Archive(ArchiveFormat::SysV),
+    supported_artifacts: SupportedArtifacts::NO_DEFAULT_PIE,
+    default_linker_format: LinkerFlavour::Ld,
+};
+
+/// Linking behaviour for Freestanding x86-64
+pub static ELF_X86_64_FREESTANDING_LINK: Link = Link {
+    formats: cow!(ELF_X86_64_FREESTANDING),
+    search: cow!(SEARCH_UNIX_DEFAULT),
+    output_filename: cow!(FILENAMES_ELF),
+    nx_stack: crate::properties::link::NxStackMode::Unsupported,
+    dynlinker_name: None,
+    default_libraries: None,
+};
+
+/// Linking behaviour for Freestanding x86-32
+pub static ELF_X86_32_FREESTANDING_LINK: Link = Link {
+    formats: cow!(ELF_X86_32_FREESTANDING),
+    search: cow!(SEARCH_UNIX_DEFAULT),
+    output_filename: cow!(FILENAMES_ELF),
+    nx_stack: crate::properties::link::NxStackMode::Unsupported,
+    dynlinker_name: None,
+    default_libraries: None,
 };

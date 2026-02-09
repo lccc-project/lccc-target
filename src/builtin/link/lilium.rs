@@ -22,7 +22,7 @@ pub static X86_64_LILIUM_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: NxStackMode::Default,
     dynlinker_name: Some(cowstr!("/lib/ld-lilium-x86_64.so.0")),
-    default_libraries: cow!(LILIUM_LIBRARIES),
+    default_libraries: Some(cow!(LILIUM_LIBRARIES)),
 };
 
 /// Linking for i686-lilium and i786-lilium
@@ -32,7 +32,7 @@ pub static X86_32_LILIUM_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: NxStackMode::Default,
     dynlinker_name: Some(cowstr!("/lib/ld-lilium-i686.so.0")),
-    default_libraries: cow!(LILIUM_LIBRARIES),
+    default_libraries: Some(cow!(LILIUM_LIBRARIES)),
 };
 
 /// Linking for clever-lilium and clever-cleveros
@@ -42,5 +42,35 @@ pub static CLEVER_LILIUM_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: NxStackMode::Default,
     dynlinker_name: Some(cowstr!("/lib/ld-lilium-clever.so.0")),
-    default_libraries: cow!(LILIUM_LIBRARIES),
+    default_libraries: Some(cow!(LILIUM_LIBRARIES)),
+};
+
+/// Linking for x86_64-lilium-kernel
+pub static X86_64_LILIUM_KERNEL_LINK: Link = Link {
+    formats: cow!(ELF_X86_64),
+    search: cow!(SEARCH_UNIX_DEFAULT),
+    output_filename: cow!(FILENAMES_ELF),
+    nx_stack: NxStackMode::Default,
+    dynlinker_name: Some(cowstr!("/lilium-loader.x86_64")),
+    default_libraries: None,
+};
+
+/// Linking for i686-lilium-kernel
+pub static X86_32_LILIUM_KERNEL_LINK: Link = Link {
+    formats: cow!(ELF_X86_32),
+    search: cow!(SEARCH_UNIX_DEFAULT),
+    output_filename: cow!(FILENAMES_ELF),
+    nx_stack: NxStackMode::Default,
+    dynlinker_name: Some(cowstr!("/lilium-loader.i686")),
+    default_libraries: None,
+};
+
+/// Linking for clever-lilium-kernel and clever-cleveros-kernel
+pub static CLEVER_LILIUM_KERNEL_LINK: Link = Link {
+    formats: cow!(ELF_CLEVER),
+    search: cow!(SEARCH_UNIX_DEFAULT),
+    output_filename: cow!(FILENAMES_ELF),
+    nx_stack: NxStackMode::Default,
+    dynlinker_name: Some(cowstr!("/lilium-loader.clever")),
+    default_libraries: None,
 };

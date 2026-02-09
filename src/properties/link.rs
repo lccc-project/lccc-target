@@ -23,6 +23,18 @@ bitflags::bitflags! {
     }
 }
 
+impl SupportedArtifacts {
+    /// Default set of [`SupportedArtifacts`] where PIE is not treated as default
+    pub const NO_DEFAULT_PIE: SupportedArtifacts = SupportedArtifacts::EXE
+        .union(SupportedArtifacts::DYLIB)
+        .union(SupportedArtifacts::PIC)
+        .union(SupportedArtifacts::PIE)
+        .union(SupportedArtifacts::STATIC_PIE);
+    /// Default set of [`SupportedArtifacts`] where a dynamic linker is not available
+    pub const NO_DYNLINKER: SupportedArtifacts =
+        SupportedArtifacts::EXE.union(SupportedArtifacts::STATIC_PIE);
+}
+
 /// Linker properties
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Link {
@@ -40,7 +52,7 @@ pub struct Link {
     pub dynlinker_name: Option<CowStr>,
 
     /// The default libraries on the platform
-    pub default_libraries: CowPtr<'static, DefaultLinking>,
+    pub default_libraries: Option<CowPtr<'static, DefaultLinking>>,
 }
 
 /// Default libraries/startfiles behaviour

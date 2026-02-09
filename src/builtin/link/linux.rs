@@ -22,7 +22,7 @@ pub static X86_64_LINUX_GNU_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: crate::properties::link::NxStackMode::GnuStack,
     dynlinker_name: Some(cowstr!("/lib/ld-linux-x86_64.so.2")),
-    default_libraries: cow!(LINUX_FILENAMES),
+    default_libraries: Some(cow!(LINUX_FILENAMES)),
 };
 
 /// Linking for x86_64-linux-gnux32
@@ -32,7 +32,7 @@ pub static X86_64_LINUX_GNUX32_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: crate::properties::link::NxStackMode::GnuStack,
     dynlinker_name: Some(cowstr!("/lib/ld-linux-x32.so.2")),
-    default_libraries: cow!(LINUX_FILENAMES),
+    default_libraries: Some(cow!(LINUX_FILENAMES)),
 };
 
 /// Linking for i*86-linux-gnu
@@ -42,5 +42,5 @@ pub static X86_32LINUX_GNU_LINK: Link = Link {
     output_filename: cow!(FILENAMES_ELF),
     nx_stack: crate::properties::link::NxStackMode::GnuStack,
     dynlinker_name: Some(cowstr!("/lib/ld-linux.so.2")),
-    default_libraries: cow!(LINUX_FILENAMES),
+    default_libraries: Some(cow!(LINUX_FILENAMES)),
 };

@@ -9,5 +9,8 @@ pub mod os;
 /// Builtin link format
 pub mod link;
 
+/// Builtin abi
+pub mod abi;
+
 /// Builtin targets (complete specifications)
 pub mod target;

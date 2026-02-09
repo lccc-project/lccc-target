@@ -1,21 +1,21 @@
-use crate::helpers::{CowSlice, CowStr};
+use crate::arch_features;
 use crate::properties::ExtPropertyValue;
 use crate::properties::arch::{Arch, Asm, Machine};
 
-/// The list of Clever-ISA features
-pub static CLEVER_FEATURES: &[CowStr] = &[
-    cowstr!("main"),
-    cowstr!("float"),
-    cowstr!("float-ext"),
-    cowstr!("vector"),
-    cowstr!("rand"),
-    cowstr!("bitmanip"),
-    cowstr!("atomic-xchg"),
-    cowstr!("float128"),
-    cowstr!("int128"),
-    cowstr!("hash-accel"),
-    cowstr!("crypto"),
-];
+arch_features! {
+    /// The List of features for Clever-ISA
+    pub static CLEVER_FEATURES = [
+        "float",
+        "float-ext" ("float"),
+        "vector",
+        "rand",
+        "int128" ("vector"),
+        "float128" ("vector", "float"),
+        "atomic-xchg",
+        "hash-accel",
+        "crypto" ("vector"),
+    ];
+}
 
 /// This list of known Clever-ISA machines
 pub static CLEVER_MACHINES: &[Machine] = &[

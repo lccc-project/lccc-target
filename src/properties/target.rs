@@ -15,8 +15,6 @@ use crate::{
 /// The target properties
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Target {
-    /// Canonical name of the environemtn, if any
-    pub env_name: Option<CowStr>,
     /// The architecture properties
     pub arch: CowPtr<'static, Arch>,
     /// The OS properties
@@ -83,6 +81,27 @@ impl Target {
 
     /// Compiles the list of target features set by default on this target. `mach` is a machine passed in explicity by the `-march` flag
     pub fn compile_target_features(&self, mach: Option<&Machine>) -> HashSet<CowStr> {
+        let implied_features = self
+            .arch
+            .features
+            .iter()
+            .map(|v| (v.name.clone(), v.implies.clone()))
+            .collect::<HashMap<_, _>>();
+
+        let reverse_implied_features = {
+            let mut reverse_implied_features = HashMap::new();
+
+            for (feature, implied) in &implied_features {
+                for implied in implied {
+                    reverse_implied_features
+                        .entry(implied.clone())
+                        .or_insert_with(Vec::new)
+                        .push(feature.clone());
+                }
+            }
+            reverse_implied_features
+        };
+
         let mach = mach.unwrap_or(&self.arch.default_machine);
 
         let mut working = HashSet::new();
@@ -91,11 +110,40 @@ impl Target {
             working.insert(feature.clone());
         }
 
+        let mut disabled = HashSet::new();
+
         for (feature, over) in &self.override_features {
             if *over {
                 working.insert(feature.clone());
             } else {
-                working.remove(feature);
+                disabled.insert(feature.clone());
+            }
+        }
+
+        loop {
+            let mut work_done = false;
+            for feat in disabled.clone() {
+                for feat in reverse_implied_features.get(&feat).unwrap() {
+                    work_done |= disabled.insert(feat.to_owned());
+                }
+            }
+            if !work_done {
+                break;
+            }
+        }
+        disabled.iter().for_each(|feature| {
+            working.remove(feature);
+        });
+
+        loop {
+            let mut work_done = false;
+            for feat in working.clone() {
+                for feat in implied_features.get(&feat).unwrap() {
+                    work_done |= working.insert(feat.to_owned());
+                }
+            }
+            if !work_done {
+                break;
             }
         }
 

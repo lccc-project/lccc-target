@@ -1,10 +1,15 @@
 use crate::{
-    helpers::CowStr,
+    arch_features,
     properties::arch::{Arch, Asm, Machine},
 };
 
-/// Features for the m6502 ISA.
-pub static M6502_FEATURES: &[CowStr] = &[cowstr!("instr-ext"), cowstr!("cmos")];
+arch_features! {
+    /// Arch features for m6502
+    pub static M6502_FEATURES = [
+        "ext-instr",
+        "cmos",
+    ];
+}
 
 /// Machines for the m6502
 pub static M6502_MACHINES: &[Machine] = &[
