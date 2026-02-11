@@ -1,5 +1,7 @@
 use crate::properties::{os::Os, target};
 
+use target_tuples::pieces;
+
 /// Standalone/Freestanding target with no OS
 pub static OS_STANDALONE: Os = Os {
     name: cowstr!("none"),
@@ -19,16 +21,13 @@ pub mod windows;
 pub mod lilium;
 
 /// Obtains the [`Os`] properties from the target name
-pub const fn from_target(os: target_tuples::OS) -> Option<&'static Os> {
+pub const fn from_target(os: pieces::OS) -> Option<&'static Os> {
     match os {
-        target_tuples::OS::Linux => Some(&linux::LINUX),
-        target_tuples::OS::Win32 => Some(&windows::WINDOWS),
-        target_tuples::OS::CleverOS => Some(&lilium::CLEVEROS),
-        target_tuples::OS::Lilium => Some(&lilium::LILIUM),
-        target_tuples::OS::SNES
-        | target_tuples::OS::NES
-        | target_tuples::OS::None
-        | target_tuples::OS::Null => Some(&OS_STANDALONE),
+        pieces::OS::Linux => Some(&linux::LINUX),
+        pieces::OS::Win32 => Some(&windows::WINDOWS),
+        pieces::OS::CleverOS => Some(&lilium::CLEVEROS),
+        pieces::OS::Lilium => Some(&lilium::LILIUM),
+        pieces::OS::SNES | pieces::OS::NES | pieces::OS::None => Some(&OS_STANDALONE),
         _ => todo!(),
     }
 }

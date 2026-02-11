@@ -1,4 +1,4 @@
-use target_tuples::{Architecture, Environment, OS, ObjectFormat};
+use target_tuples::pieces::{Architecture, Environment, OS, ObjectFormat};
 
 use crate::{
     helpers::CowPtr,
@@ -15,39 +15,19 @@ pub const fn default_tag_for(
 ) -> Option<&'static str> {
     match (arch, os, objfmt) {
         (
-            Architecture::X86_64,
+            Architecture::X86_64 { .. },
             OS::Linux | OS::Lilium | OS::FreeBSD | OS::NetBSD | OS::OpenBSD | OS::MacOSX,
             _,
         )
-        | (Architecture::X86_64, _, Some(ObjectFormat::Elf)) => Some("sysv64"),
-        (Architecture::X86_64, OS::Win32, _) => Some("win64"),
+        | (Architecture::X86_64 { .. }, _, Some(ObjectFormat::Elf)) => Some("sysv64"),
+        (Architecture::X86_64 { .. }, OS::Win32, _) => Some("win64"),
         (
-            Architecture::I386
-            | Architecture::I486
-            | Architecture::I586
-            | Architecture::I686
-            | Architecture::I786,
+            Architecture::X86_32(_),
             OS::Linux | OS::Lilium | OS::FreeBSD | OS::NetBSD | OS::OpenBSD | OS::MacOSX,
             _,
         )
-        | (
-            Architecture::I386
-            | Architecture::I486
-            | Architecture::I586
-            | Architecture::I686
-            | Architecture::I786,
-            _,
-            Some(ObjectFormat::Elf),
-        ) => Some("cdecl-unix"),
-        (
-            Architecture::I386
-            | Architecture::I486
-            | Architecture::I586
-            | Architecture::I686
-            | Architecture::I786,
-            OS::Win32,
-            _,
-        ) => Some("cdecl-ms"),
+        | (Architecture::X86_32(_), _, Some(ObjectFormat::Elf)) => Some("cdecl-unix"),
+        (Architecture::X86_32(_), OS::Win32, _) => Some("cdecl-ms"),
         _ => None,
     }
 }
@@ -59,24 +39,8 @@ pub const fn system_tag_for(
     objfmt: Option<ObjectFormat>,
 ) -> Option<&'static str> {
     match (arch, os, objfmt) {
-        (
-            Architecture::I386
-            | Architecture::I486
-            | Architecture::I586
-            | Architecture::I686
-            | Architecture::I786,
-            OS::Lilium,
-            _,
-        ) => Some("fastcall-unix"),
-        (
-            Architecture::I386
-            | Architecture::I486
-            | Architecture::I586
-            | Architecture::I686
-            | Architecture::I786,
-            OS::Win32,
-            _,
-        ) => Some("stdcall-ms"),
+        (Architecture::X86_32(_), OS::Lilium, _) => Some("fastcall-unix"),
+        (Architecture::X86_32(_), OS::Win32, _) => Some("stdcall-ms"),
         _ => None,
     }
 }
@@ -90,38 +54,30 @@ macro_rules! const_try_option {
     };
 }
 
-/// Computers the properties of a specfied [`Target`][target_tuples::Target].
-pub fn from_target(targ: &target_tuples::Target) -> Option<Target> {
-    let os_name = match targ.operating_system() {
+/// Computers the properties of a specfied [`TargetRef`][target_tuples::TargetRef].
+pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
+    let sysname = targ.sys;
+    let os_name = match sysname.os() {
         Some(name) => name,
         None => OS::None,
     };
-    let arch = const_try_option!(archs::from_target(targ.arch()));
+    let arch = const_try_option!(archs::from_target(targ.arch));
     let os = const_try_option!(os::from_target(os_name));
-    let link = const_try_option!(link::from_target(
-        targ.arch(),
-        os_name,
-        targ.environment(),
-        targ.object_format(),
-    ));
+    let link = const_try_option!(link::from_target(targ.arch, sysname,));
 
     let default_tag =
-        const_try_option!(default_tag_for(targ.arch(), os_name, targ.object_format()));
-    let system_tag = match system_tag_for(targ.arch(), os_name, targ.object_format()) {
+        const_try_option!(default_tag_for(targ.arch, os_name, sysname.object_format()));
+    let system_tag = match system_tag_for(targ.arch, os_name, sysname.object_format()) {
         Some(tag) => tag,
         None => default_tag,
     };
 
     let primitive_layout = const_try_option!(abi::primitives_from_target(
-        targ.arch(),
+        targ.arch,
         os_name,
-        targ.environment()
+        sysname.env()
     ));
-    let abi = const_try_option!(abi::abi_from_target(
-        targ.arch(),
-        os_name,
-        targ.environment()
-    ));
+    let abi = const_try_option!(abi::abi_from_target(targ.arch, os_name, sysname.env()));
 
     let mut target = Target {
         arch: CowPtr::Borrowed(arch),
@@ -135,41 +91,41 @@ pub fn from_target(targ: &target_tuples::Target) -> Option<Target> {
         extended_properties: slice![],
     };
 
-    match (
-        targ.arch(),
-        os_name,
-        targ.environment(),
-        targ.object_format(),
-    ) {
-        (arch, OS::None, _, _) if arch.is_x86() => {
+    match (targ.arch, os_name, sysname.env(), sysname.object_format()) {
+        (Architecture::X86_16(_) | Architecture::X86_32(_), OS::None, _, _) => {
             target.override_features = slice![
                 (cowstr!("x87"), false),
                 (cowstr!("fxsr"), false),
                 (cowstr!("xsave"), false),
             ]
         }
-        (Architecture::X86_64, OS::None, _, _) => {
+        (Architecture::X86_64 { .. }, OS::None, _, _) => {
             target.override_features = slice![
                 (cowstr!("x87"), false),
                 (cowstr!("fxsr"), false),
                 (cowstr!("xsave"), false),
             ]
         }
-        (arch, OS::Lilium, Some(Environment::Kernel), _) if arch.is_x86() => {
+        (
+            Architecture::X86_16(_) | Architecture::X86_32(_),
+            OS::Lilium,
+            Some(Environment::Kernel),
+            _,
+        ) => {
             target.override_features = slice![(cowstr!("xsave"), false)];
             target.extended_properties = slice![(
                 cowstr!("rust.abi.rustcall-tag"),
                 ExtPropertyValue::String(cowstr!("fastcall-unix"))
             )];
         }
-        (arch, OS::Lilium | OS::Win32, _, _) if arch.is_x86() => {
+        (Architecture::X86_16(_) | Architecture::X86_32(_), OS::Lilium | OS::Win32, _, _) => {
             target.extended_properties = slice![(
                 cowstr!("rust.abi.rustcall-tag"),
                 ExtPropertyValue::String(cowstr!("fastcall-unix"))
             )];
         }
 
-        (Architecture::X86_64, OS::Lilium, Some(Environment::Kernel), _) => {
+        (Architecture::X86_64 { .. }, OS::Lilium, Some(Environment::Kernel), _) => {
             target.override_features = slice![(cowstr!("xsave"), false)];
         }
         _ => {}

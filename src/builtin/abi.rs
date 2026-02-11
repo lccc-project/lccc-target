@@ -1,4 +1,4 @@
-use target_tuples::{Architecture, Environment, OS};
+use target_tuples::pieces::{Architecture, Environment, OS};
 
 use crate::{
     builtin::archs::x86::{X32_PRIMITIVES, X86_64_F64_LONG_DOUBLE, X86_64_PRIMITIVES_SYSV},
@@ -24,13 +24,15 @@ pub const fn primitives_from_target(
     env: Option<Environment>,
 ) -> Option<&'static PrimitiveLayouts> {
     match (arch, os, env) {
-        (Architecture::X86_64, OS::Linux, Some(Environment::GNUX32)) => Some(&X32_PRIMITIVES),
+        (Architecture::X86_64 { .. }, OS::Linux, Some(Environment::GNUX32)) => {
+            Some(&X32_PRIMITIVES)
+        }
         (
-            Architecture::X86_64,
+            Architecture::X86_64 { .. },
             OS::Linux | OS::FreeBSD | OS::OpenBSD | OS::NetBSD | OS::Fuchsia,
             _,
         ) => Some(&X86_64_PRIMITIVES_SYSV),
-        (Architecture::X86_64, OS::Lilium, _) => Some(&X86_64_F64_LONG_DOUBLE),
+        (Architecture::X86_64 { .. }, OS::Lilium, _) => Some(&X86_64_F64_LONG_DOUBLE),
         _ => None,
     }
 }
@@ -42,7 +44,7 @@ pub const fn abi_from_target(
     env: Option<Environment>,
 ) -> Option<&'static Abi> {
     match (arch, os, env) {
-        (Architecture::X86_64 | Architecture::Clever | Architecture::HoleyBytes, _, _) => {
+        (Architecture::X86_64 { .. } | Architecture::Clever | Architecture::HoleyBytes, _, _) => {
             Some(&ABI_HARDFLOAT)
         }
         (

@@ -1,4 +1,4 @@
-use target_tuples::Architecture;
+use target_tuples::pieces::Architecture;
 
 use crate::{
     helpers::CowPtr,
@@ -17,16 +17,17 @@ pub mod m65;
 /// Determines the architecture info from the architecture target name
 pub const fn from_target(arch: Architecture) -> Option<&'static Arch> {
     match arch {
-        Architecture::I86 | Architecture::I8086 | Architecture::I086 | Architecture::I186 => {
-            Some(&x86::A8086)
-        }
-        Architecture::I286 => Some(&x86::I286),
-        Architecture::I386 => Some(&x86::I386),
-        Architecture::I486 => Some(&x86::I486),
-        Architecture::I586 => Some(&x86::I586),
-        Architecture::I686 => Some(&x86::I686),
-        Architecture::I786 => Some(&x86::I786),
-        Architecture::X86_64 => Some(&x86::X86_64),
+        Architecture::X86_16(..2) => Some(&x86::A8086),
+        Architecture::X86_16(2) => Some(&x86::I286),
+        Architecture::X86_32(3) => Some(&x86::I386),
+        Architecture::X86_32(4) => Some(&x86::I486),
+        Architecture::X86_32(5) => Some(&x86::I586),
+        Architecture::X86_32(6) => Some(&x86::I686),
+        Architecture::X86_32(7..) => Some(&x86::I786),
+        Architecture::X86_64 { microarch: 0 | 1 } => Some(&x86::X86_64),
+        Architecture::X86_64 { microarch: 2 } => Some(&x86::X86_64_V2),
+        Architecture::X86_64 { microarch: 3 } => Some(&x86::X86_64V3),
+        Architecture::X86_64 { microarch: 4.. } => Some(&x86::X86_64V4),
         Architecture::Wc65c816 => Some(&m65::W65),
         Architecture::M6502 => Some(&m65::M6502),
         Architecture::M65C02 => Some(&m65::M65C02),
