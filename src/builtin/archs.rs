@@ -14,6 +14,10 @@ pub mod clever;
 /// 6502 and derivatives
 pub mod m65;
 
+/// LC Skyarch ISA
+pub mod skyarch;
+
+
 /// Determines the architecture info from the architecture target name
 pub const fn from_target(arch: Architecture) -> Option<&'static Arch> {
     match arch {
@@ -32,6 +36,7 @@ pub const fn from_target(arch: Architecture) -> Option<&'static Arch> {
         Architecture::M6502 => Some(&m65::M6502),
         Architecture::M65C02 => Some(&m65::M65C02),
         Architecture::Clever => Some(&clever::CLEVER),
+        Architecture::Skyarch => Some(&skyarch::SKYARCH),
         _ => None,
     }
 }

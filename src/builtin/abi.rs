@@ -1,7 +1,7 @@
 use target_tuples::pieces::{Architecture, Environment, OS};
 
 use crate::{
-    builtin::archs::x86::{X32_PRIMITIVES, X86_64_F64_LONG_DOUBLE, X86_64_PRIMITIVES_SYSV},
+    builtin::archs::{skyarch::SKYARCH_PRIMITIVES, x86::{X32_PRIMITIVES, X86_64_F64_LONG_DOUBLE, X86_64_PRIMITIVES_SYSV}},
     properties::abi::{Abi, PrimitiveLayouts},
 };
 
@@ -33,6 +33,7 @@ pub const fn primitives_from_target(
             _,
         ) => Some(&X86_64_PRIMITIVES_SYSV),
         (Architecture::X86_64 { .. }, OS::Lilium, _) => Some(&X86_64_F64_LONG_DOUBLE),
+        (Architecture::Skyarch, OS::None, _) => Some(&SKYARCH_PRIMITIVES),
         _ => None,
     }
 }
@@ -74,6 +75,7 @@ pub const fn abi_from_target(
             _,
             Some(Environment::GNUEABI | Environment::EABI),
         ) => Some(&ABI_SOFTFLOAT),
+        (Architecture::Skyarch, _, _) => Some(&ABI_SOFTFLOAT),
         _ => None,
     }
 }

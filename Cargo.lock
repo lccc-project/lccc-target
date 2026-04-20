@@ -18,15 +18,15 @@ dependencies = [
 
 [[package]]
 name = "target-tuple-pieces"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d338c509912e8b9160bef265e5c51c97e2003dc685f12c284c801acff3102893"
+checksum = "acc3454e2d269cab6e053ee68d9d83699c3f078aee2af8bb9fd58536a4537382"
 
 [[package]]
 name = "target-tuples"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e60b420a8644a7d5edb4dcb3041490298863e05f14da6b11614e08a5f0fad207"
+checksum = "ac3b3205e0795381490fd9345c66014572757f1ded6a52c6b8357b8cdfd3cd13"
 dependencies = [
  "target-tuple-pieces",
  "target-tuples-macro",
@@ -34,9 +34,9 @@ dependencies = [
 
 [[package]]
 name = "target-tuples-macro"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc1f6cc6aeffa5004ecd92a138885d33760401ee1ecb538174a387c3a8d85ba1"
+checksum = "c51ba3aab86f5e6b3ba87d598c9afa40c5cba99e6f15f4d16c266475b3dd3837"
 dependencies = [
  "target-tuple-pieces",
 ]

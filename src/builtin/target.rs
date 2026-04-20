@@ -28,6 +28,7 @@ pub const fn default_tag_for(
         )
         | (Architecture::X86_32(_), _, Some(ObjectFormat::Elf)) => Some("cdecl-unix"),
         (Architecture::X86_32(_), OS::Win32, _) => Some("cdecl-ms"),
+        (Architecture::Skyarch | Architecture::Clever, _, _) => Some("C"),
         _ => None,
     }
 }
@@ -56,28 +57,28 @@ macro_rules! const_try_option {
 
 /// Computers the properties of a specfied [`TargetRef`][target_tuples::TargetRef].
 pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
-    let sysname = targ.sys;
+    let sysname = targ.canonical().sys;
     let os_name = match sysname.os() {
         Some(name) => name,
         None => OS::None,
     };
-    let arch = const_try_option!(archs::from_target(targ.arch));
+    let arch = const_try_option!(archs::from_target(targ.canonical().arch));
     let os = const_try_option!(os::from_target(os_name));
-    let link = const_try_option!(link::from_target(targ.arch, sysname,));
+    let link = const_try_option!(link::from_target(targ.canonical().arch, sysname,));
 
     let default_tag =
-        const_try_option!(default_tag_for(targ.arch, os_name, sysname.object_format()));
-    let system_tag = match system_tag_for(targ.arch, os_name, sysname.object_format()) {
+        const_try_option!(default_tag_for(targ.canonical().arch, os_name, sysname.object_format()));
+    let system_tag = match system_tag_for(targ.canonical().arch, os_name, sysname.object_format()) {
         Some(tag) => tag,
         None => default_tag,
     };
 
     let primitive_layout = const_try_option!(abi::primitives_from_target(
-        targ.arch,
+        targ.canonical().arch,
         os_name,
         sysname.env()
     ));
-    let abi = const_try_option!(abi::abi_from_target(targ.arch, os_name, sysname.env()));
+    let abi = const_try_option!(abi::abi_from_target(targ.canonical().arch, os_name, sysname.env()));
 
     let mut target = Target {
         arch: CowPtr::Borrowed(arch),
@@ -91,7 +92,7 @@ pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
         extended_properties: slice![],
     };
 
-    match (targ.arch, os_name, sysname.env(), sysname.object_format()) {
+    match (targ.canonical().arch, os_name, sysname.env(), sysname.object_format()) {
         (Architecture::X86_16(_) | Architecture::X86_32(_), OS::None, _, _) => {
             target.override_features = slice![
                 (cowstr!("x87"), false),
