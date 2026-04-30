@@ -2,6 +2,7 @@ use target_tuples::pieces::{Architecture, Environment, OS, ObjectFormat, System}
 
 use crate::properties::link::Link;
 
+pub mod skyarch;
 pub mod clever;
 pub mod x86;
 
@@ -48,6 +49,9 @@ pub const fn from_target(arch: Architecture, sys: System) -> Option<&'static Lin
         }
         (Architecture::Clever, _, _, Some(ObjectFormat::Elf)) => {
             Some(&clever::ELF_CLEVER_FREESTANDING_LINK)
+        }
+        (Architecture::Skyarch, _, _, _) => {
+            Some(&skyarch::ELF_SKYARCH_FREESTANDING_LINK)
         }
         _ => None,
     }
