@@ -138,7 +138,7 @@ impl Target {
         loop {
             let mut work_done = false;
             for feat in working.clone() {
-                for feat in implied_features.get(&feat).unwrap() {
+                for feat in implied_features.get(&feat).into_iter().flatten() {
                     work_done |= working.insert(feat.to_owned());
                 }
             }
