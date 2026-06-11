@@ -28,7 +28,7 @@ pub const fn default_tag_for(
         )
         | (Architecture::X86_32(_), _, Some(ObjectFormat::Elf)) => Some("cdecl-unix"),
         (Architecture::X86_32(_), OS::Win32, _) => Some("cdecl-ms"),
-        (Architecture::Skyarch | Architecture::Clever, _, _) => Some("C"),
+        (Architecture::Skyarch | Architecture::Clever | Architecture::Wasm64 | Architecture::M6502 | Architecture::M65C02, _, _) => Some("C"),
         _ => None,
     }
 }

@@ -5,6 +5,7 @@ use crate::properties::link::Link;
 pub mod skyarch;
 pub mod clever;
 pub mod x86;
+pub mod m65;
 
 pub mod lilium;
 
@@ -53,6 +54,7 @@ pub const fn from_target(arch: Architecture, sys: System) -> Option<&'static Lin
         (Architecture::Skyarch, _, _, _) => {
             Some(&skyarch::ELF_SKYARCH_FREESTANDING_LINK)
         }
+        (Architecture::Wc65c816, _, _, Some(ObjectFormat::Elf)) => Some(&m65::W65_ELF_FREESTANDING_LINK),
         _ => None,
     }
 }

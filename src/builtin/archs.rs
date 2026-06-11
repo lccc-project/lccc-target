@@ -17,7 +17,6 @@ pub mod m65;
 /// LC Skyarch ISA
 pub mod skyarch;
 
-
 /// Determines the architecture info from the architecture target name
 pub const fn from_target(arch: Architecture) -> Option<&'static Arch> {
     match arch {
