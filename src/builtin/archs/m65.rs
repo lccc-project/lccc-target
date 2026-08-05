@@ -1,7 +1,6 @@
 
 use crate::{
-    arch_features,
-    properties::{abi::{Abi, IEEE754_DOUBLE, LE_IP16, LE_IP16_NEAR_FAR, LE_LP32_NEAR_FAR, PrimitiveLayouts}, arch::{Arch, Asm, Machine}},
+    arch_features, properties::{abi::{Abi, IEEE754_DOUBLE, LE_IP16, LE_IP16_NEAR_FAR, LE_LP32_NEAR_FAR, PrimitiveLayouts}, arch::{Arch, Asm, DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD16, Machine, NO_ATOMICS}},
 };
 
 arch_features! {
@@ -54,6 +53,7 @@ pub static M6502: Arch = Arch {
     call_tags: slice![cowstr!("C"), cowstr!("interrupt")],
     arch_extended_properties: slice![],
     asm_spec: Some(cow!(M6502_ASM)),
+    atomics: NO_ATOMICS,
 };
 
 /// m65c02 - CMOS 6502
@@ -67,6 +67,7 @@ pub static M65C02: Arch = Arch {
     call_tags: slice![cowstr!("C"), cowstr!("interrupt")],
     arch_extended_properties: slice![],
     asm_spec: Some(cow!(M6502_ASM)),
+    atomics: NO_ATOMICS,
 };
 
 /// w65 - CMOS Western Design Center 65816
@@ -80,6 +81,7 @@ pub static W65: Arch = Arch {
     call_tags: slice![cowstr!("C"), cowstr!("interrupt")],
     arch_extended_properties: slice![],
     asm_spec: Some(cow!(W65_ASM)),
+    atomics: DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD16
 };
 
 /// Primitives for CMOS Western Design Center 65816

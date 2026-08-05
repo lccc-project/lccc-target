@@ -2,13 +2,8 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    helpers::{CowPtr, CowSlice, CowStr},
-    properties::{
-        ExtPropertyValue,
-        abi::{Abi, PrimitiveLayouts},
-        arch::{Arch, Machine},
-        link::Link,
-        os::Os,
+    helpers::{CowPtr, CowSlice, CowStr}, properties::{
+        ExtPropertyValue, abi::{Abi, PrimitiveLayouts}, arch::{Arch, Atomics, Machine}, link::Link, os::Os,
     },
 };
 
@@ -36,6 +31,9 @@ pub struct Target {
     /// * The OS properties override the architecture properties, unless they start with `arch.` or the architecture name
     /// * The Machine properties (including default machine) overrides the architecture properties.
     pub extended_properties: CowSlice<(CowStr, ExtPropertyValue)>,
+    /// Extended Atomics support for the target. This can be useful on architectures where lockfree atomics are possible, but require OS support
+    /// Bits are `or`d with the corresponding bitsets from [`Target::arch`]
+    pub target_atomics: Atomics,
 }
 
 impl Target {

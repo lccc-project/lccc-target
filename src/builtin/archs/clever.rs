@@ -1,6 +1,6 @@
 use crate::arch_features;
 use crate::properties::ExtPropertyValue;
-use crate::properties::arch::{Arch, Asm, Machine};
+use crate::properties::arch::{Arch, Asm, DEFAULT_ATOMICS_WORD64, Machine};
 
 arch_features! {
     /// The List of features for Clever-ISA
@@ -53,4 +53,5 @@ pub static CLEVER: Arch = Arch {
     )],
     asm_spec: Some(cow!(CLEVER_ASM)),
     machines: cow!(*CLEVER_MACHINES),
+    atomics: DEFAULT_ATOMICS_WORD64,
 };

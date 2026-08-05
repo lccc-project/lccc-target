@@ -1,8 +1,7 @@
-use target_tuples::pieces::{Architecture, Environment, OS, ObjectFormat};
+use target_tuples::pieces::{Architecture, Environment, OS, ObjectFormat, System};
 
 use crate::{
-    helpers::CowPtr,
-    properties::{ExtPropertyValue, target::Target},
+    helpers::CowPtr, properties::{ExtPropertyValue, arch::{Atomics, NO_ATOMICS}, target::Target},
 };
 
 use super::*;
@@ -55,6 +54,13 @@ macro_rules! const_try_option {
     };
 }
 
+/// Determines extra atomics support for the target
+pub const fn target_atomics_for(arch: Architecture, sys: System) -> Atomics {
+    match (arch, sys.os(), sys.env()) {
+        _ => NO_ATOMICS,
+    }
+}
+
 /// Computers the properties of a specfied [`TargetRef`][target_tuples::TargetRef].
 pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
     let sysname = targ.canonical().sys;
@@ -90,6 +96,7 @@ pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
         link: CowPtr::Borrowed(link),
         override_features: slice![],
         extended_properties: slice![],
+        target_atomics: target_atomics_for(targ.canonical().arch, sysname),
     };
 
     match (targ.canonical().arch, os_name, sysname.env(), sysname.object_format()) {

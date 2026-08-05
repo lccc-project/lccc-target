@@ -1,4 +1,4 @@
-use crate::properties::{abi::{ByteOrder, FloatFormat, IEEE754_DOUBLE, IntLayouts, PointerKind, PrimitiveLayouts}, arch::{Arch, Machine, TargetFeature}};
+use crate::properties::{abi::{ByteOrder, FloatFormat, IEEE754_DOUBLE, IntLayouts, PointerKind, PrimitiveLayouts}, arch::{Arch, DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD32, Machine, TargetFeature}};
 
 /// Features for skyarch
 /// Coprocessors use the format `cpi-<name>` (for official coprocessors)
@@ -25,6 +25,7 @@ pub static SKYARCH: Arch = Arch {
     call_tags: slice![cowstr!("C")],
     arch_extended_properties: slice![],
     asm_spec: None, // todo: asm
+    atomics: DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD32,
 };
 
 /// Int layouts for the default psabi

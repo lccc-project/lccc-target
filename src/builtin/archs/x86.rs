@@ -1,12 +1,9 @@
 use crate::{
-    arch_features,
-    helpers::{CowPtr, CowSlice, CowStr},
-    properties::{
+    arch_features, helpers::{CowPtr, CowSlice, CowStr}, properties::{
         abi::{
             IEEE754_DOUBLE, IntLayouts, LE_ILP32, LE_IP16, LE_IP16_NEAR_FAR, LE_LP32_NEAR_FAR,
             LE_LP64, PrimitiveLayouts, X87_DOUBLE_EXTENDED,
-        },
-        arch::{Arch, Asm, Machine, TargetFeature},
+        }, arch::{Arch, Asm, Atomics, Machine, TargetFeature, DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD64, DEFAULT_ATOMICS_WORD32, DEFAULT_ATOMICS_WORD64, DEFAULT_ATOMICS_WORD128},
     },
 };
 
@@ -299,7 +296,8 @@ macro_rules! x86_archs {
         $($(#[$meta:meta])* $vis:vis static $name:ident ($name_canon:literal) {
             $(alias_names: [$($name_alias_extra:literal),* $(,)?],)?
             width: $width:literal,
-            base: $base:ident
+            base: $base:ident,
+            atomics: $atomics:expr
             $(,default_machine: $default_machine:expr)?
             $(,)?
         })*
@@ -316,6 +314,7 @@ macro_rules! x86_archs {
                 arch_extended_properties: slice![],
                 asm_spec: Some(cow!(asm:: $base)),
                 features: cow!(*X86_FEATURES),
+                atomics: $atomics,
             };
         )*
     };
@@ -327,12 +326,14 @@ x86_archs! {
     pub static A8086 ("8086") {
         width: 16,
         base: X86_16,
+        atomics: DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD64
     }
 
     /// x86-16 with protected mode
     pub static I286 ("i286") {
         width: 16,
         base: X86_16,
+        atomics: DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD64,
         default_machine: 1,
     }
 
@@ -340,12 +341,17 @@ x86_archs! {
     pub static I386 ("i386") {
         width: 32,
         base: X86_32,
+        atomics: DEFAULT_ATOMICS_LOADSTORE_ONLY_WORD64
     }
 
     /// i486
     pub static I486 ("i486") {
         width: 32,
         base: X86_32,
+        atomics: Atomics {
+            atomic_load_store_bitset: 0x00_0F,
+            ..DEFAULT_ATOMICS_WORD32
+        },
         default_machine: 1
     }
 
@@ -353,6 +359,10 @@ x86_archs! {
     pub static I586 ("i586") {
         width: 32,
         base: X86_32,
+        atomics: Atomics {
+            atomic_load_store_bitset: 0x00_0F,
+            ..DEFAULT_ATOMICS_WORD32
+        },
         default_machine: 2
     }
 
@@ -360,6 +370,7 @@ x86_archs! {
     pub static I686 ("i686") {
         width: 32,
         base: X86_32,
+        atomics: DEFAULT_ATOMICS_WORD64,
         default_machine: 7
     }
 
@@ -367,6 +378,11 @@ x86_archs! {
     pub static I786 ("i786") {
         width: 32,
         base: X86_32,
+        // We can load-store 128-bit values using xmm registers, but we can only cmpxchg8b
+        atomics: Atomics {
+            atomic_load_store_bitset: 0x00_1F,
+            ..DEFAULT_ATOMICS_WORD64
+        },
         default_machine: (machines::X86_32.len() - machines::X86_64.len())
     }
 
@@ -374,7 +390,8 @@ x86_archs! {
     pub static X86_64 ("x86-64") {
         alias_names: ["amd64", "x64_64", "intel64"],
         width: 64,
-        base: X86_64
+        base: X86_64,
+        atomics: DEFAULT_ATOMICS_WORD64
     }
 
     /// x86_64v2 (x86_64 microarchitecture levels)
@@ -382,6 +399,7 @@ x86_archs! {
         alias_names: ["amd64", "x64_64", "intel64", "x86-64"],
         width: 64,
         base: X86_64,
+        atomics: DEFAULT_ATOMICS_WORD128,
         default_machine: 1
     }
 
@@ -390,6 +408,10 @@ x86_archs! {
         alias_names: ["amd64", "x64_64", "intel64", "x86-64"],
         width: 64,
         base: X86_64,
+        atomics: Atomics {
+            atomic_load_store_bitset: 0x00_3F,
+            ..DEFAULT_ATOMICS_WORD128
+        },
         default_machine: 2
     }
 
@@ -398,6 +420,10 @@ x86_archs! {
         alias_names: ["amd64", "x64_64", "intel64", "x86-64"],
         width: 64,
         base: X86_64,
+        atomics: Atomics {
+            atomic_load_store_bitset: 0x00_3F,
+            ..DEFAULT_ATOMICS_WORD128
+        },
         default_machine: 3
     }
 }

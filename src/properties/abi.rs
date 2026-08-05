@@ -50,7 +50,7 @@ pub const X87_DOUBLE_EXTENDED: FloatFormat = FloatFormat::Ieee754Like {
     mant_bits: nzlit!(63),
 };
 /// The default format that describes IEEE754's binary128 format
-pub const IEEE764_QUAD: FloatFormat = FloatFormat::Ieee754Like {
+pub const IEEE754_QUAD: FloatFormat = FloatFormat::Ieee754Like {
     exp_bits: nzlit!(15),
     repr_int_bit: false,
     mant_bits: nzlit!(112),
