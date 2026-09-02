@@ -1,7 +1,9 @@
+use std::num::{NonZero, NonZeroU16};
+
 use target_tuples::pieces::{Architecture, Environment, OS, ObjectFormat, System};
 
 use crate::{
-    helpers::CowPtr, properties::{ExtPropertyValue, arch::{Atomics, NO_ATOMICS}, target::Target},
+    helpers::CowPtr, properties::{ExtPropertyValue, abi::PrimitiveLayouts, arch::{Atomics, NO_ATOMICS}, target::Target},
 };
 
 use super::*;
@@ -41,6 +43,15 @@ pub const fn system_tag_for(
     match (arch, os, objfmt) {
         (Architecture::X86_32(_), OS::Lilium, _) => Some("fastcall-unix"),
         (Architecture::X86_32(_), OS::Win32, _) => Some("stdcall-ms"),
+        _ => None,
+    }
+}
+
+/// Determines the system error integer width, if any, for the target
+pub const fn system_error_width_for(os: OS, prim: &PrimitiveLayouts) -> Option<NonZeroU16> {
+    match os {
+        OS::Lilium => NonZero::new(prim.int_layout.long_width),
+        OS::Linux | OS::Win32 | OS::OpenBSD | OS::FreeBSD | OS::Fuchsia => NonZero::new(prim.int_layout.int_width),
         _ => None,
     }
 }
@@ -86,6 +97,10 @@ pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
     ));
     let abi = const_try_option!(abi::abi_from_target(targ.canonical().arch, os_name, sysname.env()));
 
+    let env = const_try_option!(env::from_target(sysname));
+
+    let syserror = system_error_width_for(os_name, primitive_layout);
+
     let mut target = Target {
         arch: CowPtr::Borrowed(arch),
         os: CowPtr::Borrowed(os),
@@ -97,6 +112,8 @@ pub fn from_target(targ: &target_tuples::TargetRef) -> Option<Target> {
         override_features: slice![],
         extended_properties: slice![],
         target_atomics: target_atomics_for(targ.canonical().arch, sysname),
+        env: CowPtr::Borrowed(env),
+        system_error_width: syserror,
     };
 
     match (targ.canonical().arch, os_name, sysname.env(), sysname.object_format()) {

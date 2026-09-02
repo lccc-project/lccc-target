@@ -1,9 +1,9 @@
 //! Full target property database
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, num::NonZeroU16};
 
 use crate::{
     helpers::{CowPtr, CowSlice, CowStr}, properties::{
-        ExtPropertyValue, abi::{Abi, PrimitiveLayouts}, arch::{Arch, Atomics, Machine}, link::Link, os::Os,
+        ExtPropertyValue, abi::{Abi, PrimitiveLayouts}, arch::{Arch, Atomics, Machine}, env::Env, link::Link, os::Os,
     },
 };
 
@@ -24,6 +24,8 @@ pub struct Target {
     pub abi: CowPtr<'static, Abi>,
     /// The link settings
     pub link: CowPtr<'static, Link>,
+    /// Information about the platform environment
+    pub env: CowPtr<'static, Env>,
     /// Sets or unsets features implied by the current machine
     pub override_features: CowSlice<(CowStr, bool)>,
     /// Extended Properties set by the target as a whole.
@@ -34,6 +36,8 @@ pub struct Target {
     /// Extended Atomics support for the target. This can be useful on architectures where lockfree atomics are possible, but require OS support
     /// Bits are `or`d with the corresponding bitsets from [`Target::arch`]
     pub target_atomics: Atomics,
+    /// The width, in bits, of the integer type used for system errors
+    pub system_error_width: Option<NonZeroU16>,
 }
 
 impl Target {

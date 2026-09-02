@@ -14,3 +14,6 @@ pub mod abi;
 
 /// Builtin targets (complete specifications)
 pub mod target;
+
+/// Builtin environemnts
+pub mod env;
